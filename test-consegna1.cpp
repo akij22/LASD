@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
         /// - variabili locali gratis
 
         const int OFFSET = 1676; // per gestire i negativi del dataset
-        const int BASE = 256;
+        const int BASE = 111;
 
         B = new int[n];
 
@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
 
             // Conversione in byte basso
             int key = v + OFFSET;
-            int digit = key & 255;
+            int digit = key % BASE;
 
             // Conteggio dei byte bassi nell'apposito "bucket"
             count[digit]++;
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
             int v = A[i];
             ct_read++;              // lettura A[i]
             int key = v + OFFSET;
-            int digit = key & 255;
+            int digit = key % BASE;
 
             int pos = count[digit];
             ct_read++;              // lettura count[digit]
@@ -159,7 +159,7 @@ int main(int argc, char **argv) {
             int key = v + OFFSET;
 
             // Conversione in byte alto
-            int digit = (key >> 8) & 255;
+            int digit = (key / BASE) % BASE;
             count[digit]++;
         }
 
@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
             int v = B[i];
             ct_read++;              // lettura B[i]
             int key = v + OFFSET;
-            int digit = (key >> 8) & 255;
+            int digit = (key / BASE) % BASE;
 
             int pos = count[digit];
             ct_read++;              // lettura count[digit]
