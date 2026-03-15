@@ -124,7 +124,7 @@ int main() {
     C = new int[MAX_COUNT]; /// alloco l'array per i conteggi
 
     ifstream input_data;
-    input_data.open("data_positive.csv");
+    input_data.open("datasets/data_positive.csv");
     if (!input_data.is_open()) {
         printf("Errore: impossibile aprire data_positive.csv\n");
         return 1;

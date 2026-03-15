@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     n = max_dim;
 
     ifstream input_data;
-    input_data.open("data.csv");
+    input_data.open("datasets/data.csv");
 
     int read_min = -1;
     int read_max = -1;
