@@ -17,8 +17,8 @@ using namespace std;
 // Obiettivo:
 // Creare un algoritmo di sorting che minimizzi la somma del numero di accessi per ogni sorting di ciascuna riga del file
 
-#define NUM_BUCKET 1000
-#define BUCKET_CAP 30
+#define NUM_BUCKET 877
+#define BUCKET_CAP 35
 int ct_swap = 0;
 int ct_cmp = 0;
 int ct_read = 0;
@@ -51,22 +51,27 @@ void bucket_sort(int *A, int n) {
     int buckets[NUM_BUCKET][BUCKET_CAP];
     int bucket_count[NUM_BUCKET];
 
+    int nonEmpty[1000];
+    int nonEmpty_count = 0;
+
 
     // Inizializzazione dei bucket
     for(int i = 0; i < NUM_BUCKET; i++)
         bucket_count[i] = 0;
 
-    int MIN_VAL = -2000;
-    int MAX_VAL = 11000;
+    // Definizione dei valori massimi e minimi analizzati dal dataset `data.csv`
+    int MIN_VAL = -1680;
+    int MAX_VAL = 10590;
 
-    int bucket_size = (MAX_VAL - MIN_VAL) / NUM_BUCKET + 1;
+    // Calcolo del range che ciascun bucket può coprire
+    int bucket_range = (MAX_VAL - MIN_VAL) / NUM_BUCKET + 1;
 
     for(int i = 0; i < n; i++) {
         int v = A[i];
         ct_read++;
 
         // Calcolo del bucket in cui inserire l'elemento corrente
-        int b = (v - MIN_VAL) / bucket_size;
+        int b = (v - MIN_VAL) / bucket_range;
 
         // Controllo per non fuoriuscire dai limiti dell'array `buckets`
         if(b < 0)
@@ -79,6 +84,15 @@ void bucket_sort(int *A, int n) {
         // Ottengo il numero di elementi presenti nel bucket n. b
         int count = bucket_count[b];
         ct_read++;
+
+        if (count == 0) {
+
+            // Registro il bucket corrente `b` nell'array `nonEmpty`, in quanto sto effettuando un primo inserimento
+            // e, d'ora in poi, conterrà > 0 elementi
+            nonEmpty[nonEmpty_count] = b;
+            nonEmpty_count++;
+        }
+
 
         // Ottengo l'ultima posizione disponibile nel bucket b
         int pos = count;
@@ -109,9 +123,11 @@ void bucket_sort(int *A, int n) {
     }
 
 
+    // PASSAGGIO FINALE
     // Copio gli elementi dei bucket in ordine in A
+    // Non scorro tutti i bucket, bensì solo il numero di bucket non vuoti mediante `nonEmpty_count`
     int k = 0;
-    for(int b = 0; b < NUM_BUCKET; b++){
+    for(int b = 0; b < nonEmpty_count; b++){
 
         // Numero di elementi nel bucket n. b
         int limit = bucket_count[b];
@@ -120,25 +136,24 @@ void bucket_sort(int *A, int n) {
         // Ottengo un puntatore al bucket n. b,
         // Dove posso scorrere gli elementi di quella specifica "riga"
         // E' equivalente a scrivere `buckets[b][i], buckets[b][i - 1], ...`
-        int *bucket = buckets[b];
 
+        // int *bucket = buckets[b];
 
+        int j = nonEmpty[b];
         // Copio l'elemento in posizione k del bucket n. b in A
         // Ripeto ciò per ogni elemento del bucket, indicato da `bucket_count[b]`
         for(int i = 0; i < limit; i++) {
-            A[k] = bucket[i];
+            A[k] = buckets[j][i];
             ct_read++;
             k++;
         }
     }
 }
 
-
 int main() {
     int i, test;
     int *A;
     int *B;
-
 
     /// allocazione array
     A = new int[max_dim];
@@ -163,18 +178,12 @@ int main() {
             input_data >> comma;
         }
 
-
         ct_swap = 0;
         ct_cmp = 0;
         ct_read = 0;
 
-        /// algoritmo di sorting
+        /// Lancio l'algoritmo di sorting Bucket Sort
         bucket_sort(A, n);
-
-        if (details) {
-            printf("Output:\n");
-            print_array(A, n);
-        }
 
         /// statistiche
         read_avg += ct_read;
