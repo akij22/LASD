@@ -46,6 +46,14 @@ void swap(int &a, int &b) {
     ct_swap++;
 }
 
+bool isOrdered(int *A, int n) {
+    for (int i = 1; i < n; i++) {
+        if (A[i] < A[i - 1])
+            return false;
+    }
+    return true;
+}
+
 void bucket_sort(int *A, int n) {
 
     int buckets[NUM_BUCKET][BUCKET_CAP];
@@ -125,25 +133,28 @@ void bucket_sort(int *A, int n) {
 
     // PASSAGGIO FINALE
     // Copio gli elementi dei bucket in ordine in A
-    // Non scorro tutti i bucket, bensì solo il numero di bucket non vuoti `nonEmpty_count`
     int k = 0;
-    for(int b = 0; b < nonEmpty_count; b++){
+    for(int b = 0; b < NUM_BUCKET; b++) {
 
         // Numero di elementi nel bucket n. b
         int limit = bucket_count[b];
         ct_read++;
 
+
+
         // Ottengo un puntatore al bucket n. b,
         // Dove posso scorrere gli elementi di quella specifica "riga"
         // E' equivalente a scrivere `buckets[b][i], buckets[b][i - 1], ...`
 
-        // int *bucket = buckets[b];
+        int *bucket = buckets[b];
 
-        int j = nonEmpty[b];
+        // int j = nonEmpty[b];
+
+        // FASE FINALE
         // Copio l'elemento in posizione k del bucket n. b in A
         // Ripeto ciò per ogni elemento del bucket, indicato da `bucket_count[b]`
         for(int i = 0; i < limit; i++) {
-            A[k] = buckets[j][i];
+            A[k] = bucket[i];
             ct_read++;
             k++;
         }
@@ -200,6 +211,12 @@ int main() {
 
     printf("Array finale:\n");
     print_array(A, n);
+
+    if (!isOrdered(A, n)) {
+        printf("Array non ordinato!\n");
+    } else {
+        printf("Array e' ordinato!");
+    }
 
     delete[] A;
 
