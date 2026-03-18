@@ -115,6 +115,7 @@ int main(int argc, char **argv) {
 
             // Conteggio dei byte bassi nell'apposito "bucket"
             count[digit]++;
+            ct_read++;
         }
 
         // prefix sums
@@ -160,7 +161,9 @@ int main(int argc, char **argv) {
 
             // Conversione in byte alto
             int digit = (key / BASE) % BASE;
+
             count[digit]++;
+            ct_read++;
         }
 
         // prefix sums
