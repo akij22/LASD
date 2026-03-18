@@ -125,7 +125,7 @@ void bucket_sort(int *A, int n) {
 
     // PASSAGGIO FINALE
     // Copio gli elementi dei bucket in ordine in A
-    // Non scorro tutti i bucket, bensì solo il numero di bucket non vuoti mediante `nonEmpty_count`
+    // Non scorro tutti i bucket, bensì solo il numero di bucket non vuoti `nonEmpty_count`
     int k = 0;
     for(int b = 0; b < nonEmpty_count; b++){
 
