@@ -59,9 +59,6 @@ void bucket_sort(int *A, int n) {
     int buckets[NUM_BUCKET][BUCKET_CAP];
     int bucket_count[NUM_BUCKET];
 
-    int nonEmpty[1000];
-    int nonEmpty_count = 0;
-
 
     // Inizializzazione dei bucket
     for(int i = 0; i < NUM_BUCKET; i++)
@@ -92,15 +89,6 @@ void bucket_sort(int *A, int n) {
         // Ottengo il numero di elementi presenti nel bucket n. b
         int count = bucket_count[b];
         ct_read++;
-
-        if (count == 0) {
-
-            // Registro il bucket corrente `b` nell'array `nonEmpty`, in quanto sto effettuando un primo inserimento
-            // e, d'ora in poi, conterrà > 0 elementi
-            nonEmpty[nonEmpty_count] = b;
-            nonEmpty_count++;
-        }
-
 
         // Ottengo l'ultima posizione disponibile nel bucket b
         int pos = count;
@@ -140,15 +128,12 @@ void bucket_sort(int *A, int n) {
         int limit = bucket_count[b];
         ct_read++;
 
-
-
         // Ottengo un puntatore al bucket n. b,
         // Dove posso scorrere gli elementi di quella specifica "riga"
         // E' equivalente a scrivere `buckets[b][i], buckets[b][i - 1], ...`
 
         int *bucket = buckets[b];
 
-        // int j = nonEmpty[b];
 
         // FASE FINALE
         // Copio l'elemento in posizione k del bucket n. b in A
@@ -213,9 +198,9 @@ int main() {
     print_array(A, n);
 
     if (!isOrdered(A, n)) {
-        printf("Array non ordinato!\n");
+        printf("Array non ordinato");
     } else {
-        printf("Array e' ordinato!");
+        printf("Array e' ordinato");
     }
 
     delete[] A;
