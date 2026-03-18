@@ -1,13 +1,10 @@
 #include <fstream>
 #include <iostream>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
 using namespace std;
 
-// compilazione: g++ test-bucketSort.cpp
+// compilazione: g++ bucketSortV2.cpp
 //
 
 // Il programma carica il file data.csv contenente 100 righe con dati da ordinare in modo crescente
@@ -18,7 +15,6 @@ using namespace std;
 // Creare un algoritmo di sorting che minimizzi la somma del numero di accessi per ogni sorting di ciascuna riga del file
 
 #define NUM_BUCKET 877
-#define BUCKET_CAP 35
 int ct_swap = 0;
 int ct_cmp = 0;
 int ct_read = 0;
@@ -26,10 +22,11 @@ int ct_read = 0;
 int max_dim = 1000;
 int ntests = 100;
 int ndiv = 1;
-int details = 0;
-int graph = 0;
 
 int n = 1000; /// dimensione dell'array
+const int MIN_VAL = -1680;
+const int MAX_VAL = 10590;
+const int BUCKET_RANGE = (MAX_VAL - MIN_VAL) / NUM_BUCKET + 1; // 14
 
 void print_array(int *A, int dim) {
     for (int j = 0; j < dim; j++) {
@@ -55,93 +52,82 @@ bool isOrdered(int *A, int n) {
 }
 
 void bucket_sort(int *A, int n) {
+    // freq[b][o] = quante volte compare il valore
+    // MIN_VAL + b*BUCKET_RANGE + o
+    int freq[NUM_BUCKET][BUCKET_RANGE];
+    unsigned short usedMask[NUM_BUCKET];
 
-    int buckets[NUM_BUCKET][BUCKET_CAP];
-    int bucket_count[NUM_BUCKET];
-
-
-    // Inizializzazione dei bucket
-    for(int i = 0; i < NUM_BUCKET; i++)
-        bucket_count[i] = 0;
-
-    // Definizione dei valori massimi e minimi analizzati dal dataset `data.csv`
-    int MIN_VAL = -1680;
-    int MAX_VAL = 10590;
-
-    // Calcolo del range che ciascun bucket può coprire
-    int bucket_range = (MAX_VAL - MIN_VAL) / NUM_BUCKET + 1;
-
-    for(int i = 0; i < n; i++) {
-        int v = A[i];
-        ct_read++;
-
-        // Calcolo del bucket in cui inserire l'elemento corrente
-        int b = (v - MIN_VAL) / bucket_range;
-
-        // Controllo per non fuoriuscire dai limiti dell'array `buckets`
-        if(b < 0)
-            b = 0;
-
-        if(b >= NUM_BUCKET)
-            b = NUM_BUCKET - 1;
-
-
-        // Ottengo il numero di elementi presenti nel bucket n. b
-        int count = bucket_count[b];
-        ct_read++;
-
-        // Ottengo l'ultima posizione disponibile nel bucket b
-        int pos = count;
-
-        int *bucket = buckets[b];
-
-
-        // INSERTION SORT all'interno del bucket
-        // In modo da mantenere il bucket ordinato
-        // Sposto gli elementi > v a destra di esso per fargli spazio
-        while(pos > 0) {
-            int prev = bucket[pos - 1];
-            ct_read++;
-            ct_cmp++;
-
-            if(prev <= v)
-                break;
-
-            bucket[pos] = prev;
-            pos--;
+    for (int b = 0; b < NUM_BUCKET; b++) {
+        usedMask[b] = 0;
+        for (int o = 0; o < BUCKET_RANGE; o++) {
+            freq[b][o] = 0;
         }
-
-        // Inserisco nel bucket n. b l'elemento v nella posizione corretta
-        buckets[b][pos] = v;
-
-        // Aumento il numero di elementi nel bucket n. b
-        bucket_count[b] = count + 1;
     }
 
+    // Fase di conteggio.
+    // ct_read viene incrementato ad ogni lettura da array.
+    for (int i = 0; i < n; i++) {
+        int v = A[i];
+        ct_read++; // lettura A[i]
 
-    // PASSAGGIO FINALE
-    // Copio gli elementi dei bucket in ordine in A
+        int idx = v - MIN_VAL;
+        int b = idx / BUCKET_RANGE;
+
+        if (b < 0)
+            b = 0;
+        if (b >= NUM_BUCKET)
+            b = NUM_BUCKET - 1;
+
+        int off = idx - b * BUCKET_RANGE;
+        if (off < 0)
+            off = 0;
+        if (off >= BUCKET_RANGE)
+            off = BUCKET_RANGE - 1;
+
+        int c = freq[b][off];
+        ct_read++; // lettura freq[b][off]
+
+        freq[b][off] = c + 1;
+
+        if (c == 0) {
+
+            unsigned short mask = usedMask[b];
+            ct_read++; // lettura usedMask[b]
+            mask = (unsigned short)(mask | (1u << off));
+            usedMask[b] = mask;
+        }
+    }
+
+    // Ricostruzione ordinata
     int k = 0;
-    for(int b = 0; b < NUM_BUCKET; b++) {
+    for (int b = 0; b < NUM_BUCKET; b++) {
 
-        // Numero di elementi nel bucket n. b
-        int limit = bucket_count[b];
-        ct_read++;
+        unsigned short mask = usedMask[b];
+        ct_read++; // lettura usedMask[b]
 
-        // Ottengo un puntatore al bucket n. b,
-        // Dove posso scorrere gli elementi di quella specifica "riga"
-        // E' equivalente a scrivere `buckets[b][i], buckets[b][i - 1], ...`
+        if (mask == 0)
+            continue;
 
-        int *bucket = buckets[b];
+        while (mask != 0) {
+            // Ricerca manuale del primo bit a 1 (no builtins/STL).
+            int off = 0;
+            unsigned short tmp = mask;
+            while ((tmp & 1u) == 0u) {
+                tmp = (unsigned short)(tmp >> 1);
+                off++;
+            }
+            mask = (unsigned short)(mask & (mask - 1));
 
 
-        // FASE FINALE
-        // Copio l'elemento in posizione k del bucket n. b in A
-        // Ripeto ciò per ogni elemento del bucket, indicato da `bucket_count[b]`
-        for(int i = 0; i < limit; i++) {
-            A[k] = bucket[i];
-            ct_read++;
-            k++;
+            int c = freq[b][off];
+            ct_read++; // lettura freq[b][off]
+            int value = MIN_VAL + b * BUCKET_RANGE + off;
+
+            while (c > 0) {
+                A[k] = value; // scrittura
+                k++;
+                c--;
+            }
         }
     }
 }
@@ -149,7 +135,6 @@ void bucket_sort(int *A, int n) {
 int main() {
     int i, test;
     int *A;
-    int *B;
 
     /// allocazione array
     A = new int[max_dim];

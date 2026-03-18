@@ -1,10 +1,8 @@
 #include <fstream>
 #include <iostream>
-#include <math.h>
+#include <cstring>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
 using namespace std;
 
 // compilazione: g++ consegna1.cpp -o consegna1
@@ -25,6 +23,12 @@ int ndiv = 1;
 
 int n = 0;
 
+constexpr int kMinVal = -1676;
+constexpr int kMaxVal = 10575;
+constexpr int kRange = kMaxVal - kMinVal + 1; // 12252
+constexpr int kCountersPerWord = 16;          // 64 bit / 4 bit
+constexpr int kPackedSize = (kRange + kCountersPerWord - 1) / kCountersPerWord;
+
 void print_array(int *A, int dim) {
     for (int j = 0; j < dim; j++) {
         printf("%d ", A[j]);
@@ -41,43 +45,62 @@ bool isOrdered(int *A, int n) {
 }
 
 
-void packed_counting_sort(int *A, int n) {
-    const int MIN_VAL = -1676;
-    const int RANGE = 12252;           // 10575 - (-1676) + 1
-    const int CPW = 16;              // contatori per word (64 bit / 4 bit)
-    const int PSIZE = (RANGE + CPW - 1) / CPW; // ceil(12252/16) = 766
+int get_packed_counter(long long word, int slot) {
+    const int shift = slot * 4;
+    return (int)((word >> shift) & 0xFLL);
+}
 
-    long long packed[PSIZE];
+long long set_packed_counter(long long word, int slot, int value) {
+    const int shift = slot * 4;
+    const long long clear_mask = ~(0xFLL << shift);
+    const long long new_bits = ((long long)value & 0xFLL) << shift;
+    return (word & clear_mask) | new_bits;
+}
+
+
+void packed_counting_sort(int *A, int n) {
+    long long packed[kPackedSize];
     memset(packed, 0, sizeof(packed));
 
-    // Fase 1: conta le occorrenze di ogni valore (2 letture per elemento)
+    // Fase 1: conta le occorrenze di ogni valore.
     for (int i = 0; i < n; i++) {
-        int val   = A[i] - MIN_VAL;
+        const int normalized_value = A[i] - kMinVal;
         ct_read++;
 
-        int w     = val / CPW;
-        int shift = (val % CPW) * 4;
+        const int word_index = normalized_value / kCountersPerWord;
+        const int slot_in_word = normalized_value % kCountersPerWord;
 
-        long long word = packed[w];
+        long long word = packed[word_index];
         ct_read++;
 
-        packed[w] = (word & ~(0xFLL << shift)) | ((((word >> shift) & 0xFLL) + 1) << shift);
+        const int current_count = get_packed_counter(word, slot_in_word);
+        word = set_packed_counter(word, slot_in_word, current_count + 1);
+        packed[word_index] = word;
     }
 
-    // Fase 2: ricostruisce A scansionando i contatori (1 lettura per word)
+    // Fase 2: ricostruisce A scansionando i contatori.
     int pos = 0;
-    for (int w = 0; w < PSIZE; w++) {
-        long long word = packed[w];
+    for (int word_index = 0; word_index < kPackedSize; word_index++) {
+        const long long word = packed[word_index];
         ct_read++;
 
-        if (word == 0) continue;
+        if (word == 0) {
+            continue;
+        }
 
-        int base = w * CPW + MIN_VAL;
-        int lim  = (w == PSIZE - 1) ? RANGE - w * CPW : CPW;
+        const int base_value = kMinVal + word_index * kCountersPerWord;
+        int slots_in_this_word = kCountersPerWord;
+        if (word_index == kPackedSize - 1) {
+            slots_in_this_word = kRange - word_index * kCountersPerWord;
+        }
 
-        for (int j = 0; j < lim; j++) {
-            int c = (int)((word >> (j * 4)) & 0xFLL);
-            while (c--) A[pos++] = base + j;
+        for (int slot = 0; slot < slots_in_this_word; slot++) {
+            int count = get_packed_counter(word, slot);
+            while (count > 0) {
+                A[pos] = base_value + slot;
+                pos++;
+                count--;
+            }
         }
     }
 }
@@ -124,9 +147,9 @@ int main(int argc, char **argv) {
     print_array(A, n);
 
     if (isOrdered(A, n))
-        printf("Array is ordered\n");
+        printf("Array e' ordinato\n");
     else
-        printf("Array is NOT ordered\n");
+        printf("Array non e' ordinato\n");
 
     delete[] A;
     return 0;
