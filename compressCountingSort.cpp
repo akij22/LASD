@@ -53,7 +53,7 @@ int get_packed_counter(long long word, int slot) {
 long long set_packed_counter(long long word, int slot, int value) {
     const int shift = slot * 4;
     const long long clear_mask = ~(0xFLL << shift);
-    const long long new_bits = ((long long)value & 0xFLL) << shift;
+    const long long new_bits = ((long long)value & static_cast<long long>(15)) << shift;
     return (word & clear_mask) | new_bits;
 }
 
