@@ -2,6 +2,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 using namespace std;
 
 // compilazione: g++ test-bucketSort.cpp
@@ -14,10 +15,8 @@ using namespace std;
 // Obiettivo:
 // Creare un algoritmo di sorting che minimizzi la somma del numero di accessi per ogni sorting di ciascuna riga del file
 
-#define NUM_BUCKET 700
+#define NUM_BUCKET 614
 #define BUCKET_CAP 35
-#define PRECOUNT_BUCKETS 4
-#define PRECOUNT_THRESHOLD 16
 int ct_swap = 0;
 int ct_cmp = 0;
 int ct_read = 0;
@@ -62,7 +61,6 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount) {
     int buckets[NUM_BUCKET][BUCKET_CAP];
     int bucket_count[NUM_BUCKET];
     bool use_precount[NUM_BUCKET];
-    int selected_precount = 0;
 
 
     // Inizializzazione dei bucket
@@ -97,51 +95,36 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount) {
         int count = bucket_count[b];
         ct_read++;
 
-        // Attivo la pre-counting strategy sui primi 4 bucket che ricevono elementi.
-        if(count == 0 && selected_precount < PRECOUNT_BUCKETS) {
-            use_precount[b] = true;
-            selected_precount++;
-        }
+        // Inserimento ordinato con ricerca binaria.
+        if(count < BUCKET_CAP) {
+            int *bucket = buckets[b];
 
-        // I bucket marcati per pre-counting vengono popolati senza mantenerli ordinati.
-        if(use_precount[b]) {
-            buckets[b][count] = v;
+            int lo = 0;
+            int hi = count;
+            while(lo < hi) {
+                int mid = lo + (hi - lo) / 2;
+                int mv = bucket[mid];
+                ct_read++;
+                ct_cmp++;
+
+                if(mv <= v)
+                    lo = mid + 1;
+                else
+                    hi = mid;
+            }
+
+            int pos = lo;
+
+            // Sposta in blocco gli elementi a destra della posizione di inserimento.
+            if(pos < count) {
+                memmove(bucket + pos + 1,
+                        bucket + pos,
+                        (size_t)(count - pos) * sizeof(int));
+            }
+
+            bucket[pos] = v;
             bucket_count[b] = count + 1;
-
-            continue;
         }
-
-        // Ottengo l'ultima posizione disponibile nel bucket b
-        int pos = count;
-
-        int *bucket = buckets[b];
-
-
-        // INSERTION SORT all'interno del bucket
-        // In modo da mantenere il bucket ordinato
-        // Sposto gli elementi > v a destra di esso per fargli spazio
-        while(pos > 0) {
-            int prev = bucket[pos - 1];
-            ct_read++;
-            ct_cmp++;
-
-            if(prev <= v)
-                break;
-
-            bucket[pos] = prev;
-            pos--;
-        }
-
-        // Inserisco nel bucket n. b l'elemento v nella posizione corretta
-        buckets[b][pos] = v;
-
-        if(details >= 2) {
-            printf("[DBG] A[%d]=%d -> bucket[%d], pos=%d (insertion)\n",
-                   i, v, b, pos);
-        }
-
-        // Aumento il numero di elementi nel bucket n. b
-        bucket_count[b] = count + 1;
     }
 
     for(int b = 0; b < NUM_BUCKET; b++) {
@@ -159,80 +142,7 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount) {
         int limit = bucket_count[b];
         ct_read++;
 
-        // Ottengo un puntatore al bucket n. b,
-        // Dove posso scorrere gli elementi di quella specifica "riga"
-        // E' equivalente a scrivere `buckets[b][i], buckets[b][i - 1], ...`
-
         int *bucket = buckets[b];
-
-
-        if(use_precount[b]) {
-            // Se il bucket e' abbastanza grande, usa counting sort locale (range del bucket).
-            if(limit >= PRECOUNT_THRESHOLD) {
-                int freq[BUCKET_CAP];
-                for(int off = 0; off < bucket_range; off++)
-                    freq[off] = 0;
-
-                int base = MIN_VAL + b * bucket_range;
-
-                for(int i = 0; i < limit; i++) {
-                    int v = bucket[i];
-                    ct_read++;
-
-                    int off = v - base;
-                    if(off < 0)
-                        off = 0;
-                    if(off >= bucket_range)
-                        off = bucket_range - 1;
-
-                    int c = freq[off];
-                    ct_read++;
-                    freq[off] = c + 1;
-                }
-
-                for(int off = 0; off < bucket_range; off++) {
-                    int c = freq[off];
-                    ct_read++;
-                    int value = base + off;
-                    while(c > 0) {
-                        A[k] = value;
-                        k++;
-                        c--;
-                    }
-                }
-            } else {
-                // Bucket piccolo: insertion sort locale e poi copia.
-                for(int i = 1; i < limit; i++) {
-                    int v = bucket[i];
-                    ct_read++;
-                    int pos = i;
-
-                    while(pos > 0) {
-                        int prev = bucket[pos - 1];
-                        ct_read++;
-                        ct_cmp++;
-                        if(prev <= v)
-                            break;
-
-                        bucket[pos] = prev;
-                        pos--;
-                    }
-                    bucket[pos] = v;
-                }
-
-                for(int i = 0; i < limit; i++) {
-                    A[k] = bucket[i];
-                    ct_read++;
-                    k++;
-                }
-            }
-            continue;
-        }
-
-
-        // FASE FINALE
-        // Copio l'elemento in posizione k del bucket n. b in A
-        // Ripeto ciò per ogni elemento del bucket, indicato da `bucket_count[b]`
         for(int i = 0; i < limit; i++) {
             A[k] = bucket[i];
             ct_read++;
