@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
@@ -34,6 +35,19 @@ int graph = 0;
 
 int n = 1000; /// dimensione dell'array
 
+struct Stats {
+    int ct_swap = 0;
+    int ct_cmp = 0;
+    int ct_read = 0;
+
+    // Inizializzazione del costruttore per Stats
+    Stats() {
+        ct_swap = 0;
+        ct_cmp = 0;
+        ct_read = 0;
+    }
+};
+
 void print_array(int *A, int dim) {
     for (int j = 0; j < dim; j++) {
         printf("%d ", A[j]);
@@ -57,7 +71,7 @@ bool isOrdered(int *A, int n) {
     return true;
 }
 
-void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount) {
+void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, Stats &stats) {
     int buckets[NUM_BUCKET][BUCKET_CAP];
     int bucket_count[NUM_BUCKET];
     bool use_precount[NUM_BUCKET];
@@ -78,7 +92,9 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount) {
 
     for(int i = 0; i < n; i++) {
         int v = A[i];
-        ct_read++;
+
+        stats.ct_read++;
+        // ct_read++;
 
         // Calcolo del bucket in cui inserire l'elemento corrente
         int b = (v - MIN_VAL) / bucket_range;
@@ -93,7 +109,8 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount) {
 
         // Ottengo il numero di elementi presenti nel bucket n. b
         int count = bucket_count[b];
-        ct_read++;
+        stats.ct_read++;
+        // ct_read++;
 
         // Inserimento ordinato con ricerca binaria.
         if(count < BUCKET_CAP) {
@@ -104,8 +121,10 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount) {
             while(lo < hi) {
                 int mid = lo + (hi - lo) / 2;
                 int mv = bucket[mid];
-                ct_read++;
-                ct_cmp++;
+                // ct_read++;
+                stats.ct_read++;
+                stats.ct_cmp++;
+                // ct_cmp++;
 
                 if(mv <= v)
                     lo = mid + 1;
@@ -140,12 +159,14 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount) {
 
         // Numero di elementi nel bucket n. b
         int limit = bucket_count[b];
-        ct_read++;
+        // ct_read++;
+        stats.ct_read++;
 
         int *bucket = buckets[b];
         for(int i = 0; i < limit; i++) {
             A[k] = bucket[i];
-            ct_read++;
+            // ct_read++;
+            stats.ct_read++;
             k++;
         }
     }
@@ -162,6 +183,8 @@ int main() {
     int bucket_max[NUM_BUCKET];
     int bucket_nonempty_tests[NUM_BUCKET];
     int bucket_precount_tests[NUM_BUCKET];
+
+    Stats stats;
 
     /// allocazione array
     A = new int[max_dim];
@@ -194,12 +217,20 @@ int main() {
             input_data >> comma;
         }
 
-        ct_swap = 0;
-        ct_cmp = 0;
-        ct_read = 0;
+        stats.ct_swap = 0;
+        stats.ct_cmp = 0;
+        stats.ct_read = 0;
 
         /// Lancio l'algoritmo di sorting Bucket Sort
-        bucket_sort(A, n, test_bucket_count, test_use_precount);
+        bucket_sort(A, n, test_bucket_count, test_use_precount, stats);
+
+
+        // Controllo che per ogni test l'array finale sia ordinato
+        if (!isOrdered(A, n)) {
+            printf("Array non e' ordinato...");
+            return 1;
+        }
+
 
         for(i = 0; i < NUM_BUCKET; i++) {
             int c = test_bucket_count[i];
@@ -215,12 +246,12 @@ int main() {
         }
 
         /// statistiche
-        read_avg += ct_read;
-        if (read_min < 0 || read_min > ct_read)
-            read_min = ct_read;
-        if (read_max < 0 || read_max < ct_read)
-            read_max = ct_read;
-        printf("Test %d %d\n", test, ct_read);
+        read_avg += stats.ct_read;
+        if (read_min < 0 || read_min > stats.ct_read)
+            read_min = stats.ct_read;
+        if (read_max < 0 || read_max < stats.ct_read)
+            read_max = stats.ct_read;
+        printf("Test %d %d\n", test, stats.ct_read);
     }
 
     printf("N test: %d, Min: %d, Med: %.1f, Max: %d\n",
@@ -240,14 +271,6 @@ int main() {
         }
     }
 
-    printf("Array finale:\n");
-    print_array(A, n);
-
-    if (!isOrdered(A, n)) {
-        printf("Array non ordinato");
-    } else {
-        printf("Array e' ordinato");
-    }
 
     delete[] A;
 
