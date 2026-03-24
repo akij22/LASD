@@ -6,7 +6,7 @@
 #include <string.h>
 using namespace std;
 
-// compilazione: g++ test-bucketSort.cpp
+// compilazione: g++ bucketSortV1.cpp
 //
 
 // Il programma carica il file data.csv contenente 100 righe con dati da ordinare in modo crescente
@@ -18,9 +18,6 @@ using namespace std;
 
 #define NUM_BUCKET 614
 #define BUCKET_CAP 35
-int ct_swap = 0;
-int ct_cmp = 0;
-int ct_read = 0;
 
 int ct_read_bucket = 0;
 
@@ -55,13 +52,6 @@ void print_array(int *A, int dim) {
     printf("\n");
 }
 
-void swap(int &a, int &b) {
-    int tmp = a;
-    a = b;
-    b = tmp;
-    /// aggiorno contatore globale di swap
-    ct_swap++;
-}
 
 bool isOrdered(int *A, int n) {
     for (int i = 1; i < n; i++) {
@@ -118,10 +108,14 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
 
             int lo = 0;
             int hi = count;
+
             while(lo < hi) {
+
+                // Calcolo punto medio `mid`
                 int mid = lo + (hi - lo) / 2;
                 int mv = bucket[mid];
                 // ct_read++;
+
                 stats.ct_read++;
                 stats.ct_cmp++;
                 // ct_cmp++;
@@ -132,6 +126,7 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
                     hi = mid;
             }
 
+            // Posizione finale in cui inserire il nuovo elemento
             int pos = lo;
 
             // Sposta in blocco gli elementi a destra della posizione di inserimento.
@@ -141,7 +136,10 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
                         (size_t)(count - pos) * sizeof(int));
             }
 
+            // Inserisco il nuovo elemento nella posizione corretta
             bucket[pos] = v;
+
+            // Incremento il numero di elementi presenti nel bucket corrente
             bucket_count[b] = count + 1;
         }
     }
@@ -163,6 +161,7 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
         stats.ct_read++;
 
         int *bucket = buckets[b];
+
         for(int i = 0; i < limit; i++) {
             A[k] = bucket[i];
             // ct_read++;
