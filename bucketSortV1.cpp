@@ -19,6 +19,37 @@ using namespace std;
 #define NUM_BUCKET 614
 #define BUCKET_CAP 35
 
+// Mappatura non uniforme dei bucket:
+// piu' bucket nelle zone dense del dataset, meno bucket nelle zone sparse.
+const int DATA_MIN = -1680;
+const int S1_MAX = 366;
+const int S2_MAX = 2409;
+const int S3_MAX = 4452;
+const int S4_MAX = 6495;
+const int S5_MAX = 8538;
+const int DATA_MAX = 10590;
+
+const int B1 = 27;
+const int B2 = 66;
+const int B3 = 79;
+const int B4 = 104;
+const int B5 = 124;
+const int B6 = 214;
+
+const int O1 = 0;
+const int O2 = O1 + B1;
+const int O3 = O2 + B2;
+const int O4 = O3 + B3;
+const int O5 = O4 + B4;
+const int O6 = O5 + B5;
+
+const int R1 = (S1_MAX - DATA_MIN) / B1 + 1;
+const int R2 = (S2_MAX - (S1_MAX + 1)) / B2 + 1;
+const int R3 = (S3_MAX - (S2_MAX + 1)) / B3 + 1;
+const int R4 = (S4_MAX - (S3_MAX + 1)) / B4 + 1;
+const int R5 = (S5_MAX - (S4_MAX + 1)) / B5 + 1;
+const int R6 = (DATA_MAX - (S5_MAX + 1)) / B6 + 1;
+
 int ct_read_bucket = 0;
 
 int max_dim = 1000;
@@ -28,8 +59,6 @@ int ndiv = 1;
 // details = 1: statistiche bucket aggregate dopo tutti i test
 // details >= 2: include anche il log per ogni inserimento elemento->bucket
 int details = 1;
-int graph = 0;
-
 int n = 1000; /// dimensione dell'array
 
 struct Stats {
@@ -61,10 +90,36 @@ bool isOrdered(int *A, int n) {
     return true;
 }
 
+int map_to_bucket(int v) {
+    int b;
+
+    if(v <= S1_MAX)
+        b = O1 + (v - DATA_MIN) / R1;
+    else if(v <= S2_MAX)
+        b = O2 + (v - (S1_MAX + 1)) / R2;
+    else if(v <= S3_MAX)
+        b = O3 + (v - (S2_MAX + 1)) / R3;
+    else if(v <= S4_MAX)
+        b = O4 + (v - (S3_MAX + 1)) / R4;
+    else if(v <= S5_MAX)
+        b = O5 + (v - (S4_MAX + 1)) / R5;
+    else
+        b = O6 + (v - (S5_MAX + 1)) / R6;
+
+    if(b < 0)
+        b = 0;
+    if(b >= NUM_BUCKET)
+        b = NUM_BUCKET - 1;
+
+    return b;
+}
+
 void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, Stats &stats) {
     int buckets[NUM_BUCKET][BUCKET_CAP];
     int bucket_count[NUM_BUCKET];
     bool use_precount[NUM_BUCKET];
+    int used_buckets[NUM_BUCKET];
+    int used_count = 0;
 
 
     // Inizializzazione dei bucket
@@ -73,34 +128,24 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
         use_precount[i] = false;
     }
 
-    // Definizione dei valori massimi e minimi analizzati dal dataset `data.csv`
-    int MIN_VAL = -1680;
-    int MAX_VAL = 10590;
-
-    // Calcolo del range che ciascun bucket può coprire
-    int bucket_range = (MAX_VAL - MIN_VAL) / NUM_BUCKET + 1;
-
     for(int i = 0; i < n; i++) {
         int v = A[i];
 
         stats.ct_read++;
         // ct_read++;
 
-        // Calcolo del bucket in cui inserire l'elemento corrente
-        int b = (v - MIN_VAL) / bucket_range;
-
-        // Controllo per non fuoriuscire dai limiti dell'array `buckets`
-        if(b < 0)
-            b = 0;
-
-        if(b >= NUM_BUCKET)
-            b = NUM_BUCKET - 1;
+        // Calcolo del bucket con mappatura non uniforme.
+        int b = map_to_bucket(v);
 
 
         // Ottengo il numero di elementi presenti nel bucket n. b
         int count = bucket_count[b];
         stats.ct_read++;
         // ct_read++;
+
+        // Salva l'indice del bucket quando passa da vuoto a non vuoto.
+        if(count == 0)
+            used_buckets[used_count++] = b;
 
         // Inserimento ordinato con ricerca binaria.
         if(count < BUCKET_CAP) {
@@ -149,11 +194,25 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
         out_use_precount[b] = use_precount[b];
     }
 
+    // I bucket usati vengono ordinati per indice cosi' il merge finale resta crescente.
+    for(int i = 1; i < used_count; i++) {
+        int key = used_buckets[i];
+        int j = i - 1;
+
+        while(j >= 0 && used_buckets[j] > key) {
+            used_buckets[j + 1] = used_buckets[j];
+            j--;
+        }
+
+        used_buckets[j + 1] = key;
+    }
+
 
     // PASSAGGIO FINALE
-    // Copio gli elementi dei bucket in ordine in A
+    // Copio gli elementi dei soli bucket non vuoti in ordine in A.
     int k = 0;
-    for(int b = 0; b < NUM_BUCKET; b++) {
+    for(int idx = 0; idx < used_count; idx++) {
+        int b = used_buckets[idx];
 
         // Numero di elementi nel bucket n. b
         int limit = bucket_count[b];
