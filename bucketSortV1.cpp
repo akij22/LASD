@@ -81,8 +81,9 @@ void print_array(int *A, int dim) {
 }
 
 
-bool isOrdered(int *A, int n) {
+bool isOrdered(int *A, int n, Stats &stats) {
     for (int i = 1; i < n; i++) {
+        stats.ct_read++;
         if (A[i] < A[i - 1])
             return false;
     }
@@ -122,11 +123,10 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
 
     bool use_precount[NUM_BUCKET];
 
-    // Lista di indici dei bucket non vuoti
-    int used_buckets[NUM_BUCKET];
-
-    // Quanti bucket non vuoti ci sono
-    int used_count = 0;
+    // Bitmap compatta dei bucket non vuoti: 1 bit per bucket.
+    enum { USED_WORD_BITS = 64 };
+    const int used_word_count = (NUM_BUCKET + USED_WORD_BITS - 1) / USED_WORD_BITS;
+    unsigned long long used_words[(NUM_BUCKET + USED_WORD_BITS - 1) / USED_WORD_BITS];
 
 
     // Inizializzazione dei bucket
@@ -134,6 +134,8 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
         bucket_count[i] = 0;
         use_precount[i] = false;
     }
+    for(int i = 0; i < used_word_count; i++)
+        used_words[i] = 0ULL;
 
     for(int i = 0; i < n; i++) {
         int v = A[i];
@@ -150,11 +152,15 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
         stats.ct_read++;
         // ct_read++;
 
-        // Salva l'indice del bucket quando passa da vuoto a non vuoto
+        // Marca il bucket come non vuoto al primo inserimento.
         if(count == 0) {
-            // Memorizzo il bucket n. b nella lista di bucket non vuoti
-            used_buckets[used_count] = b;
-            used_count++;
+            int word_idx = b / USED_WORD_BITS;
+            int bit_idx = b % USED_WORD_BITS;
+            unsigned long long word = used_words[word_idx];
+            stats.ct_read++;
+
+            word |= (1ULL << bit_idx);
+            used_words[word_idx] = word;
         }
 
         // Inserimento ordinato con ricerca binaria
@@ -205,43 +211,35 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
         out_use_precount[b] = use_precount[b];
     }
 
-    // I bucket usati vengono ordinati per indice cosi' il merge finale resta crescente
-    for(int i = 1; i < used_count; i++) {
-        int key = used_buckets[i];
-        stats.ct_read++;
-
-        int j = i - 1;
-
-        while(j >= 0 && used_buckets[j] > key) {
-            used_buckets[j + 1] = used_buckets[j];
-            stats.ct_read++;
-            j--;
-        }
-
-        used_buckets[j + 1] = key;
-    }
-
-
     // PASSAGGIO FINALE
     // Copio gli elementi dei soli bucket non vuoti in ordine in A.
     int k = 0;
-    for(int idx = 0; idx < used_count; idx++) {
-        int b = used_buckets[idx];
-
+    for(int word_idx = 0; word_idx < used_word_count; word_idx++) {
+        unsigned long long mask = used_words[word_idx];
         stats.ct_read++;
 
-        // Numero di elementi nel bucket n. b (che non è vuoto, dato che l'ho ottenuto da `used_buckets`)
-        int limit = bucket_count[b];
-        // ct_read++;
-        stats.ct_read++;
+        if(mask == 0ULL)
+            continue;
 
-        int *bucket = buckets[b];
+        while(mask != 0ULL) {
+            int bit_idx = __builtin_ctzll(mask);
+            int b = word_idx * USED_WORD_BITS + bit_idx;
+            mask &= (mask - 1ULL);
 
-        for(int i = 0; i < limit; i++) {
-            A[k] = bucket[i];
-            // ct_read++;
+            if(b >= NUM_BUCKET)
+                break;
+
+            // Numero di elementi nel bucket n. b non vuoto.
+            int limit = bucket_count[b];
             stats.ct_read++;
-            k++;
+
+            int *bucket = buckets[b];
+
+            for(int i = 0; i < limit; i++) {
+                A[k] = bucket[i];
+                stats.ct_read++;
+                k++;
+            }
         }
     }
 }
@@ -300,7 +298,7 @@ int main() {
 
 
         // Controllo che per ogni test l'array finale sia ordinato
-        if (!isOrdered(A, n)) {
+        if (!isOrdered(A, n, stats)) {
             printf("Array non e' ordinato...");
             return 1;
         }
