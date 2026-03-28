@@ -50,7 +50,6 @@ const int R4 = (S4_MAX - (S3_MAX + 1)) / B4 + 1;
 const int R5 = (S5_MAX - (S4_MAX + 1)) / B5 + 1;
 const int R6 = (DATA_MAX - (S5_MAX + 1)) / B6 + 1;
 
-int ct_read_bucket = 0;
 
 int max_dim = 1000;
 int ntests = 100;
@@ -111,14 +110,22 @@ int map_to_bucket(int v) {
     if(b >= NUM_BUCKET)
         b = NUM_BUCKET - 1;
 
+    // printf("Elemento %d mappato al bucket %d\n", v, b);
     return b;
 }
 
 void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, Stats &stats) {
     int buckets[NUM_BUCKET][BUCKET_CAP];
+
+    // Numero di elementi per ogni bucket
     int bucket_count[NUM_BUCKET];
+
     bool use_precount[NUM_BUCKET];
+
+    // Lista di indici dei bucket non vuoti
     int used_buckets[NUM_BUCKET];
+
+    // Quanti bucket non vuoti ci sono
     int used_count = 0;
 
 
@@ -134,7 +141,7 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
         stats.ct_read++;
         // ct_read++;
 
-        // Calcolo del bucket con mappatura non uniforme.
+        // calcolo dell'indice del bucket
         int b = map_to_bucket(v);
 
 
@@ -143,11 +150,15 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
         stats.ct_read++;
         // ct_read++;
 
-        // Salva l'indice del bucket quando passa da vuoto a non vuoto.
-        if(count == 0)
-            used_buckets[used_count++] = b;
+        // Salva l'indice del bucket quando passa da vuoto a non vuoto
+        if(count == 0) {
+            // Memorizzo il bucket n. b nella lista di bucket non vuoti
+            used_buckets[used_count] = b;
+            used_count++;
+        }
 
-        // Inserimento ordinato con ricerca binaria.
+        // Inserimento ordinato con ricerca binaria
+        // Ciò assicura che in ogni bucket i valori siano ordinati
         if(count < BUCKET_CAP) {
             int *bucket = buckets[b];
 
@@ -174,7 +185,7 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
             // Posizione finale in cui inserire il nuovo elemento
             int pos = lo;
 
-            // Sposta in blocco gli elementi a destra della posizione di inserimento.
+            // Sposta in blocco gli elementi a destra della posizione di inserimento di uno
             if(pos < count) {
                 memmove(bucket + pos + 1,
                         bucket + pos,
@@ -194,13 +205,16 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
         out_use_precount[b] = use_precount[b];
     }
 
-    // I bucket usati vengono ordinati per indice cosi' il merge finale resta crescente.
+    // I bucket usati vengono ordinati per indice cosi' il merge finale resta crescente
     for(int i = 1; i < used_count; i++) {
         int key = used_buckets[i];
+        stats.ct_read++;
+
         int j = i - 1;
 
         while(j >= 0 && used_buckets[j] > key) {
             used_buckets[j + 1] = used_buckets[j];
+            stats.ct_read++;
             j--;
         }
 
@@ -214,7 +228,9 @@ void bucket_sort(int *A, int n, int *out_bucket_count, bool *out_use_precount, S
     for(int idx = 0; idx < used_count; idx++) {
         int b = used_buckets[idx];
 
-        // Numero di elementi nel bucket n. b
+        stats.ct_read++;
+
+        // Numero di elementi nel bucket n. b (che non è vuoto, dato che l'ho ottenuto da `used_buckets`)
         int limit = bucket_count[b];
         // ct_read++;
         stats.ct_read++;
