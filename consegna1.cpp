@@ -3,8 +3,9 @@
 #include <stdio.h>
 using namespace std;
 
-// compilazione: g++ bucketSortV0.cpp
-//
+// GRUPPO DI LAVORO composto da Achille Rossi, Pietro Dondi, Filippo Miari
+
+// compilazione: g++ consegna1.cpp
 
 // Il programma carica il file data.csv contenente 100 righe con dati da ordinare in modo crescente
 // ./a.out
@@ -12,6 +13,34 @@ using namespace std;
 
 // Obiettivo:
 // Creare un algoritmo di sorting che minimizzi la somma del numero di accessi per ogni sorting di ciascuna riga del file
+
+// Commento che spiega le parti generate dall'LLM
+/*
+    Lo spunto per trovare un algoritmo efficace per ordinare il dataset data.csv ci è venuto analizzando la disposizione dei dati.
+    I 100 sets di numeri hanno in comune un andamento sinusoidale, con la prima metà dei numeri divisa in "blocchi" da 30 elementi circa molto simili tra loro.
+    Da metà in poi i numeri sono più casuali, senza seguire un pattern comune.
+    Sfruttando questa proprietà l'utilizzo di Buckets è ottimale.
+
+    L’algoritmo sviluppato è una variante del bucket sort pensata per ridurre il numero di letture in memoria.
+    L’idea di base è quella di suddividere i dati in molti piccoli gruppi (bucket)
+    utilizzando una funzione di mapping costruita per distribuire correttamente i valori.
+    In questo modo ogni bucket contiene pochi elementi.
+    Durante l’inserimento, ogni elemento viene posizionato direttamente nel bucket corretto mantenendo l’ordine
+    tramite semplici confronti tra elementi.
+    Poiché i bucket sono molto piccoli, gli spostamenti e i confronti necessari risultano limitati,
+    evitando di dover rileggere l’intero array ogni volta.
+
+    Alla fine, i bucket vengono concatenati perché contengono dati ordinati
+    e sono già organizzati tra loro tramite la funzione di mapping.
+
+    Questo approccio permette di lavorare sempre su sottoinsiemi ridotti di dati,
+    riducendo significativamente il numero totale di letture rispetto a un algoritmo come quicksort.
+
+    Durante lo sviluppo sono state testate anche altre soluzioni,
+    come l’uso di binary search e strutture circolari (ring buffer) per ottimizzare l’inserimento,
+    ma queste introducevano un numero maggiore di letture. La soluzione finale a bucket è risultata quindi la più efficace.
+
+    */
 
 #define NUM_BUCKET 614
 #define BUCKET_CAP 35
@@ -227,7 +256,7 @@ int main() {
 
 
     ifstream input_data;
-    input_data.open("datasets/data.csv");
+    input_data.open("data.csv");
 
     int read_min = -1;
     int read_max = -1;
