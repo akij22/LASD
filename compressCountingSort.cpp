@@ -7,11 +7,12 @@ using namespace std;
 
 // compilazione: g++ consegna1.cpp -o consegna1
 //
-// Algoritmo: Packed Counting Sort con nibble packing (4 bit per contatore, 16 contatori per long long)
+// Algoritmo: Packed Counting Sort con contatori bit-packed.
 // Sfrutta le proprieta' dei dati: valori interi nel range [-1676, 10575] (range 12252).
-// Con 1000 elementi distribuiti su 12252 valori distinti, nessun valore puo' apparire
-// piu' di 15 volte, quindi i contatori a 4 bit non saturano mai: nessun overflow handling necessario.
-// Letture totali per serie: 2n + ceil(range/16) = 2000 + 766 = 2766
+// Ogni contatore usa 10 bit, quindi rappresenta [0, 1023]:
+// e' sufficiente per n=1000 senza rischio overflow.
+// Letture teoriche per serie: 2n + ceil(range / floor(64/10))
+// = 2000 + ceil(12252 / 6) = 4042.
 
 int ct_swap = 0;
 int ct_cmp = 0;
@@ -26,7 +27,9 @@ int n = 0;
 constexpr int kMinVal = -1676;
 constexpr int kMaxVal = 10575;
 constexpr int kRange = kMaxVal - kMinVal + 1; // 12252
-constexpr int kCountersPerWord = 16;          // 64 bit / 4 bit
+constexpr int kCounterBits = 10;              // max count 1023
+constexpr int kCounterMask = (1 << kCounterBits) - 1;
+constexpr int kCountersPerWord = 64 / kCounterBits; // floor(64 / 10) = 6
 constexpr int kPackedSize = (kRange + kCountersPerWord - 1) / kCountersPerWord;
 
 void print_array(int *A, int dim) {
@@ -45,21 +48,24 @@ bool isOrdered(int *A, int n) {
 }
 
 
-int get_packed_counter(long long word, int slot) {
-    const int shift = slot * 4;
-    return (int)((word >> shift) & 0xFLL);
+int get_packed_counter(unsigned long long word, int slot) {
+    const int shift = slot * kCounterBits;
+    return (int)((word >> shift) & static_cast<unsigned long long>(kCounterMask));
 }
 
-long long set_packed_counter(long long word, int slot, int value) {
-    const int shift = slot * 4;
-    const long long clear_mask = ~(0xFLL << shift);
-    const long long new_bits = ((long long)value & static_cast<long long>(15)) << shift;
+unsigned long long set_packed_counter(unsigned long long word, int slot, int value) {
+    const int shift = slot * kCounterBits;
+    const unsigned long long clear_mask =
+        ~(static_cast<unsigned long long>(kCounterMask) << shift);
+    const unsigned long long new_bits =
+        (static_cast<unsigned long long>(value & kCounterMask) << shift);
     return (word & clear_mask) | new_bits;
 }
 
 
 void packed_counting_sort(int *A, int n) {
-    long long packed[kPackedSize];
+
+    unsigned long long packed[kPackedSize];
     memset(packed, 0, sizeof(packed));
 
     // Fase 1: conta le occorrenze di ogni valore.
@@ -70,7 +76,7 @@ void packed_counting_sort(int *A, int n) {
         const int word_index = normalized_value / kCountersPerWord;
         const int slot_in_word = normalized_value % kCountersPerWord;
 
-        long long word = packed[word_index];
+        unsigned long long word = packed[word_index];
         ct_read++;
 
         const int current_count = get_packed_counter(word, slot_in_word);
@@ -81,7 +87,7 @@ void packed_counting_sort(int *A, int n) {
     // Fase 2: ricostruisce A scansionando i contatori.
     int pos = 0;
     for (int word_index = 0; word_index < kPackedSize; word_index++) {
-        const long long word = packed[word_index];
+        const unsigned long long word = packed[word_index];
         ct_read++;
 
         if (word == 0) {
