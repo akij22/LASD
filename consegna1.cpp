@@ -148,7 +148,7 @@ int map_to_bucket(int v) {
 }
 
 // Inserimento locale stile gnome sort: adatto a bucket con pochi elementi.
-void insert_bucket_gnome(int *bucket, int count, int value, Stats &stats) {
+void gnome_sort(int *bucket, int count, int value, Stats &stats) {
     bucket[count] = value;
     int pos = count;
 
@@ -191,7 +191,7 @@ void bucket_sort(int *A, int n, Stats &stats) {
         stats.ct_read++;
 
         // Inserimento locale con gnome sort.
-        insert_bucket_gnome(buckets[b], count, v, stats);
+        gnome_sort(buckets[b], count, v, stats);
         bucket_count[b] = count + 1;
     }
 
@@ -226,7 +226,7 @@ int main() {
 
 
     ifstream input_data;
-    input_data.open("data.csv");
+    input_data.open("datasets/data.csv");
 
     int read_min = -1;
     int read_max = -1;
