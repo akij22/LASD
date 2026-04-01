@@ -147,6 +147,26 @@ int map_to_bucket(int v) {
     }
 }
 
+// Inserimento locale stile gnome sort: adatto a bucket con pochi elementi.
+void insert_bucket_gnome(int *bucket, int count, int value, Stats &stats) {
+    bucket[count] = value;
+    int pos = count;
+
+    while (pos > 0) {
+        int left = bucket[pos - 1];
+        stats.ct_read++;
+        stats.ct_cmp++;
+
+        if (left <= value)
+            break;
+
+        bucket[pos] = left;
+        pos--;
+        stats.ct_swap++;
+    }
+    bucket[pos] = value;
+}
+
 void bucket_sort(int *A, int n, Stats &stats) {
 
     int buckets[NUM_BUCKET][BUCKET_CAP];
@@ -170,58 +190,8 @@ void bucket_sort(int *A, int n, Stats &stats) {
         int count = bucket_count[b];
         stats.ct_read++;
 
-        // Se il bucket è vuoto, allora inserisco il primo elemento e incremento il contatore del corrispettivo bucket a 1
-        // Poi, passo al prossimo elemento (`continue`)
-        if (count == 0) {
-
-            buckets[b][0] = v;
-            bucket_count[b] = 1;
-            continue;
-        }
-
-        int pos = count - 1;
-        // Ottengo l'ultimo elemento presente nel bucket
-        int prev = buckets[b][pos];
-        stats.ct_read++;
-        stats.ct_cmp++;
-
-        // (CASO BASE) Se l'ultimo elemento è <= a quello corrente (`v`)
-        if (prev <= v) {
-
-            // Inserisco `v` dopo l'ultimo elemento (quindi come nuovo ultimo elemento) e incremento il contatore del bucket
-            // Poi, passo al prossimo (`continue`)
-            buckets[b][count] = v;
-            bucket_count[b] = count + 1;
-            continue;
-        }
-
-        // Copio l'ultimo elemento in una posizione più a destra
-        buckets[b][count] = prev;
-
-        // Scorro il bucket da destra a sinistra
-        while (pos > 0) {
-
-            prev = buckets[b][pos - 1];
-            stats.ct_read++;
-            stats.ct_cmp++;
-
-            // Finchè gli elementi sono maggiori di `v`, li sposto a destra
-            // Esco dal ciclo solo quando trovo un elemento <= a `v`, quindi so dove inserirlo
-            if (prev <= v)
-                break;
-
-            buckets[b][pos] = prev;
-            pos--;
-        }
-
-        // Se il primo elemento è maggiore di `v`, allora `v` diventa il primo elemento (in posizione 0)
-        if (pos == 0 && prev > v)
-            buckets[b][0] = v;
-        else
-            // Inserisco `v` nella posizione corretta (`pos`)
-            buckets[b][pos] = v;
-
-        // Incremento il conteggio degli elementi per il bucket, in quanto ho terminato l'inserimento
+        // Inserimento locale con gnome sort.
+        insert_bucket_gnome(buckets[b], count, v, stats);
         bucket_count[b] = count + 1;
     }
 
