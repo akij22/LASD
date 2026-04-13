@@ -1,0 +1,6 @@
+/Users/achillerossi/Documents/UNIPR/LAB ALGORITMI/Consegna2/build/CMakeFiles/consegna2.dir
+/Users/achillerossi/Documents/UNIPR/LAB ALGORITMI/Consegna2/build/CMakeFiles/run.dir
+/Users/achillerossi/Documents/UNIPR/LAB ALGORITMI/Consegna2/build/CMakeFiles/run_verbose.dir
+/Users/achillerossi/Documents/UNIPR/LAB ALGORITMI/Consegna2/build/CMakeFiles/run_graph.dir
+/Users/achillerossi/Documents/UNIPR/LAB ALGORITMI/Consegna2/build/CMakeFiles/edit_cache.dir
+/Users/achillerossi/Documents/UNIPR/LAB ALGORITMI/Consegna2/build/CMakeFiles/rebuild_cache.dir
