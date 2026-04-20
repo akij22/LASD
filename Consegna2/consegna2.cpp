@@ -5,7 +5,7 @@
     2. [X] Calcolo profondità e altezza di ciascun nodo dell'albero
     3. [X] Funzione isBalanced: restituire un flag che indichi se l'albero è bilanciato o meno. Bonus: l'algoritmo è O ( n ) con n nodi
     4. [X] Funzione isComplete: restituire un flag che indiche se l'albero è completo secondo la definizione classica
-    5. Funzione Lowest Common Ancestor: dati due valori presenti nell'albero, restituire il valore del nodo piu' basso che contiene entrambi nel suo sottoalbero
+    5. [X] Funzione Lowest Common Ancestor: dati due valori presenti nell'albero, restituire il valore del nodo piu' basso che contiene entrambi nel suo sottoalbero
 
  */
 #include <math.h>
@@ -239,54 +239,6 @@ void postOrder(node_t *n) {
         printf("%d ", n->val);
 }
 
-void EulerOrder(node_t *n) {
-    if (details)
-        printf("%d ", n->val);
-
-    output_visit << n->val << "\n";
-
-    if (n->L != NULL) {
-        EulerOrder(n->L);
-    }
-
-    if (details)
-        printf("%d ", n->val);
-    output_visit << n->val << "\n";
-
-    if (n->R != NULL) {
-        EulerOrder(n->R);
-    }
-
-    if (details)
-        printf("%d ", n->val);
-    output_visit << n->val << "\n";
-}
-
-void print_tree_rec(node_t *n, int depth) {
-    if (n == NULL)
-        return;
-
-    print_tree_rec(n->R, depth + 1);
-
-    for (int i = 0; i < depth; i++)
-        printf("    ");
-    printf("%d\n", n->val);
-
-    print_tree_rec(n->L, depth + 1);
-}
-
-void print_tree(node_t *root) {
-    if (root == NULL) {
-        printf("Albero vuoto\n");
-        return;
-    }
-
-    print_tree_rec(root, 0);
-    printf("\n");
-}
-
-
-
 
 void print_queue(queue_t* q) {
     printf("Coda: ");
@@ -300,72 +252,7 @@ void print_queue(queue_t* q) {
     printf("\n");
 }
 
-
-
-
-node_t* flip(node_t *n) {
-    node_t *n1 = node_new(n->val);
-
-    if (n->L != NULL)
-        n1->R = flip(n->L);
-
-    if (n->R != NULL)
-        n1->L = flip(n->R);
-
-    return n1;
-}
-
-int calculate_node_dept(node_t* n, node_t* current) {
-    if (current == NULL)
-        printf("Ho trovato un nodo null, torno indietro\n");
-
-    if (current == NULL)
-        return -1;
-
-    if (current == n)
-        return 0;
-
-    int left_counter = calculate_node_dept(n, current->L);
-
-    if (left_counter != -1)
-        return 1 + left_counter;
-
-    int right_counter = calculate_node_dept(n, current->R);
-
-    if (right_counter != -1)
-        return right_counter + 1;
-
-    return -1;
-}
-
-void calculate_all_depts(node_t* current, node_t* root) {
-    if (current == NULL)
-        return;
-
-    printf("Profondita' del nodo %i e' %i \n", current->val, calculate_node_dept(current, root));
-
-    calculate_all_depts(current->L, root);
-    calculate_all_depts(current->R, root);
-}
-
-int calculate_node_height(node_t* current) {
-    if (current == NULL)
-        return -1;
-
-    return 1 + tree_max(calculate_node_height(current->L),
-                        calculate_node_height(current->R));
-}
-
-void calculate_all_heights(node_t* current) {
-    if (current == NULL)
-        return;
-
-    printf("Altezza' del nodo %i e' %i \n", current->val, calculate_node_height(current));
-
-    calculate_all_heights(current->L);
-    calculate_all_heights(current->R);
-}
-
+// Utiilizzo di BFS, quindi uso la struttura dati `queue_t`
 bool isComplete(node_t* current) {
     bool check_null = false;
     bool final = true;
@@ -392,11 +279,15 @@ bool isComplete(node_t* current) {
             check_null = true;
         }
 
+        // Se il nodo ha un figlio destro, ma ho gia trovato un nodo nullo, l'albero non è completo
         if (node->R != NULL) {
+
             if (check_null) {
                 final = false;
                 break;
             }
+
+            // Altrimenti lo aggiungo alla coda
             enqueue(&q, node->R);
 
         } else {
@@ -407,12 +298,20 @@ bool isComplete(node_t* current) {
     return final;
 }
 
+int calculate_node_height(node_t* current) {
+    if (current == NULL)
+        return -1;
+
+    return 1 + tree_max(calculate_node_height(current->L),
+                        calculate_node_height(current->R));
+}
+
 node_t* build_euler() {
     return NULL;
 }
 
-
 // Utilizzo di DFS POST-ORDER
+// Controllo prima il sottoalbero di sinistra, poi quello di destra e infine il centro (ovvero la radice)
 int checkHeight(node_t* current) {
     if (current == NULL)
         return 0;
@@ -429,16 +328,21 @@ int checkHeight(node_t* current) {
     if (right_height == -1)
         return -1;
 
+    // Se la differenza dei due sottoalberi è maggiore di 1, allora l'albero non è bilanciato
     if (abs(left_height - right_height) > 1)
         return -1;
 
-    printf("Nodo corrente %i con altezza %i\n", current->val, 1 + max(left_height, right_height));
+    // printf("Nodo corrente %i con altezza %i\n", current->val, 1 + max(left_height, right_height));
     return 1 + max(left_height, right_height);
 }
 
 bool isBalanced(node_t* root) {
+
+    // Controllo se il metodo `checkHeight` è ricaduto nelle casistiche considerate non valide
     return (checkHeight(root) != -1) ? true : false;
 }
+
+
 
 
 int main(int argc, char **argv) {
@@ -497,8 +401,19 @@ int main(int argc, char **argv) {
 
     print_tree(non_balanced_root);
 
-    printf("%d\n", isBalanced(non_balanced_root));
-    printf("%d", isBalanced(root1));
+    if (isBalanced(non_balanced_root))
+        printf("L'albero e' bilanciato");
+    else printf("L'albero non e' bilanciato");
+    printf("\n");
+
+    printf("Ricerca LCA sul seguente albero:\n");
+    print_tree(complete_root);
+    printf("\n");
+
+    printf("Sto ricercando i valori 5 e 4\n");
+    node_t* final_LCA = LCA(complete_root, complete_root->L->L, complete_root->L->R);
+
+    printf("Nodo LCA: %i\n", final_LCA->val);
 
 
 
