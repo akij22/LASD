@@ -20,6 +20,12 @@ void tree_insert_child_R(node_t *n, int elem);
 void preOrder(node_t *n);
 void postOrder(node_t *n);
 
+int calculate_node_height(node_t *current);
+
+int checkHeight(node_t *current);
+
+bool isBalanced(node_t *root);
+
 inline void print_tree_rec(node_t *n, int depth) {
     if (n == NULL)
         return;
@@ -88,7 +94,7 @@ inline void calculate_all_depts(node_t *current, node_t *root) {
     calculate_all_depts(current->R, root);
 }
 
-int calculate_node_height(node_t *current);
+
 
 inline void calculate_all_heights(node_t *current) {
     if (current == NULL)
@@ -100,8 +106,7 @@ inline void calculate_all_heights(node_t *current) {
     calculate_all_heights(current->R);
 }
 
-int checkHeight(node_t *current);
-bool isBalanced(node_t *root);
+
 
 inline node_t *LCA(node_t *current, node_t *u, node_t *v) {
     if (current == NULL)
@@ -113,6 +118,8 @@ inline node_t *LCA(node_t *current, node_t *u, node_t *v) {
     node_t *left = LCA(current->L, u, v);
     node_t *right = LCA(current->R, u, v);
 
+
+    // Se trovo entrambi i nodi ricercati nei due sottoalberi (sx e dx), allora ritorno il nodo corrente
     if (left != NULL && right != NULL)
         return current;
 

@@ -252,6 +252,13 @@ void print_queue(queue_t* q) {
     printf("\n");
 }
 
+
+
+// FUNZIONI RIGUARDANTI LA CONSEGNA N.2
+// ALCUNI DI ESSI SONO IMPLEMENTATI ANCHE NEL FILE @node.h
+
+
+
 // Utiilizzo di BFS, quindi uso la struttura dati `queue_t`
 bool isComplete(node_t* current) {
     bool check_null = false;
@@ -382,6 +389,10 @@ int main(int argc, char **argv) {
     tree_insert_child_R(complete_root, 3);
     tree_insert_child_L(complete_root->L, 4);
     tree_insert_child_R(complete_root->L, 5);
+    tree_insert_child_R(complete_root->L->L, 6);
+    tree_insert_child_L(complete_root->L->L, 7);
+    tree_insert_child_L(complete_root->R, 6);
+    tree_insert_child_R(complete_root->R, 7);
 
     printf("Albero non completo:\n");
     print_tree(non_complete_root);
@@ -410,8 +421,8 @@ int main(int argc, char **argv) {
     print_tree(complete_root);
     printf("\n");
 
-    printf("Sto ricercando i valori 5 e 4\n");
-    node_t* final_LCA = LCA(complete_root, complete_root->L->L, complete_root->L->R);
+    printf("Sto ricercando i valori 6 e 7\n");
+    node_t* final_LCA = LCA(complete_root, complete_root->L->L->L, complete_root->L->L->R);
 
     printf("Nodo LCA: %i\n", final_LCA->val);
 
