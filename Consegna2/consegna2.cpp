@@ -21,7 +21,20 @@ using namespace std;
 
 // compilazione: g++ consegna2.cpp
 
-node_t *global_ptr_ref = NULL; /// usato per memorizzare il puntatore alla prima lista allocata
+struct RunOptions {
+    bool details = false;
+    bool graph = false;
+};
+
+struct GraphContext {
+    node_t *base_ptr = NULL; /// usato per memorizzare il puntatore alla prima lista allocata
+    ofstream output;
+    int n_operazione = 0; /// contatore di operazioni per visualizzare i vari step
+};
+
+
+RunOptions run_options;
+GraphContext graph_context;
 
 int ct_swap = 0;
 int ct_cmp = 0;
@@ -30,14 +43,9 @@ int ct_op = 0; /// operazioni per la ricerca
 int max_dim = 0;
 int ntests = 1;
 int ndiv = 1;
-int details = 0;
-int graph = 0;
 
 int ct_visit = 0;
 int n = 0; /// dimensione dell'array
-
-ofstream output_graph;
-int n_operazione = 0; /// contatore di operazioni per visualizzare i vari step
 
 ofstream output_visit;
 ifstream input_visit;
@@ -51,11 +59,11 @@ int parse_cmd(int argc, char **argv) {
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][1] == 'v') {
-            details = 1;
+            run_options.details = true;
             ok_parse = 1;
         }
         if (argv[i][1] == 'g') {
-            graph = 1;
+            run_options.graph = true;
             ok_parse = 1;
         }
     }
@@ -84,49 +92,49 @@ int tree_max(int a, int b) {
 int get_address(void *node) {
     if (node == NULL)
         return 0;
-    return abs((int)((long)node - (long)global_ptr_ref));
+    return abs((int)((long)node - (long)graph_context.base_ptr));
 }
 
 void print_node_code(node_t *n) {
-    output_graph << "node_" << get_address(n) << "_" << n_operazione;
+    graph_context.output << "node_" << get_address(n) << "_" << graph_context.n_operazione;
 }
 
 void node_print_graph(node_t *n) {
     print_node_code(n);
-    output_graph << "\n[label=<\n<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\" >\n<TR> <TD CELLPADDING=\"3\" BORDER=\"0\" ALIGN=\"LEFT\" bgcolor=\"#f0f0f0\" PORT=\"id\">";
-    output_graph << get_address(n) << "</TD> </TR><TR>\n<TD PORT=\"val\" bgcolor=\"#a0FFa0\">";
-    output_graph << n->val << "</TD>\n <TD PORT=\"L\" ";
+    graph_context.output << "\n[label=<\n<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\" >\n<TR> <TD CELLPADDING=\"3\" BORDER=\"0\" ALIGN=\"LEFT\" bgcolor=\"#f0f0f0\" PORT=\"id\">";
+    graph_context.output << get_address(n) << "</TD> </TR><TR>\n<TD PORT=\"val\" bgcolor=\"#a0FFa0\">";
+    graph_context.output << n->val << "</TD>\n <TD PORT=\"L\" ";
     if (n->L == NULL)
-        output_graph << "bgcolor=\"#808080\"> NULL";
+        graph_context.output << "bgcolor=\"#808080\"> NULL";
     else
-        output_graph << "> " << get_address(n->L);
-    output_graph << "</TD>\n <TD PORT=\"R\" ";
+        graph_context.output << "> " << get_address(n->L);
+    graph_context.output << "</TD>\n <TD PORT=\"R\" ";
     if (n->R == NULL)
-        output_graph << "bgcolor=\"#808080\"> NULL";
+        graph_context.output << "bgcolor=\"#808080\"> NULL";
     else
-        output_graph << "> " << get_address(n->R);
-    output_graph << "</TD>\n</TR></TABLE>>];\n";
+        graph_context.output << "> " << get_address(n->R);
+    graph_context.output << "</TD>\n</TR></TABLE>>];\n";
 
     if (n->L != NULL && n->R != NULL) {
-        output_graph << "rank = same; ";
+        graph_context.output << "rank = same; ";
         print_node_code(n);
-        output_graph << ";";
+        graph_context.output << ";";
         print_node_code(n->L);
-        output_graph << ";\n";
+        graph_context.output << ";\n";
     }
 
     if (n->L != NULL) {
         print_node_code(n);
-        output_graph << ":L:c -> ";
+        graph_context.output << ":L:c -> ";
         print_node_code(n->L);
-        output_graph << ":id ;\n";
+        graph_context.output << ":id ;\n";
     }
 
     if (n->R != NULL) {
         print_node_code(n);
-        output_graph << ":R:c -> ";
+        graph_context.output << ":R:c -> ";
         print_node_code(n->R);
-        output_graph << ":id ;\n";
+        graph_context.output << ":id ;\n";
     }
 }
 
@@ -140,21 +148,21 @@ void tree_print_rec_graph(node_t *n) {
 
 void tree_print_graph(node_t *n) {
     tree_print_rec_graph(n);
-    n_operazione++;
+    graph_context.n_operazione++;
 }
 
 void export_tree_graph(node_t *root) {
-    output_graph.open("graph.dot");
-    output_graph << "digraph g\n";
-    output_graph << "{\n";
-    output_graph << "node [shape=none]\n";
-    output_graph << "rankdir=\"TB\"\n";
-    output_graph << "edge[tailclip=false,arrowtail=dot];\n";
+    graph_context.output.open("graph.dot");
+    graph_context.output << "digraph g\n";
+    graph_context.output << "{\n";
+    graph_context.output << "node [shape=none]\n";
+    graph_context.output << "rankdir=\"TB\"\n";
+    graph_context.output << "edge[tailclip=false,arrowtail=dot];\n";
 
     tree_print_graph(root);
 
-    output_graph << "}\n";
-    output_graph.close();
+    graph_context.output << "}\n";
+    graph_context.output.close();
 
     system("dot graph.dot -Tpdf -o graph.pdf");
 }
@@ -172,14 +180,14 @@ void node_print(node_t *n) {
 
 node_t *node_new(int elem) {
     node_t *t = new node_t;
-    if (details) {
+    if (run_options.details) {
         printf("nodo creato\n");
     }
 
     t->val = elem;
     t->L = NULL;
     t->R = NULL;
-    if (details) {
+    if (run_options.details) {
         printf("Imposto a NULL children\n");
     }
 
@@ -216,7 +224,7 @@ void insert_random_rec(node_t *n) {
 }
 
 void preOrder(node_t *n) {
-    if (details)
+    if (run_options.details)
         printf("%d ", n->val);
 
     if (n->L != NULL) {
@@ -235,7 +243,7 @@ void postOrder(node_t *n) {
         postOrder(n->R);
     }
 
-    if (details)
+    if (run_options.details)
         printf("%d ", n->val);
 }
 
@@ -359,7 +367,7 @@ int main(int argc, char **argv) {
     srand((unsigned)time(NULL));
 
     node_t *root = node_new(1);
-    global_ptr_ref = root;
+    graph_context.base_ptr = root;
 
     tree_insert_child_L(root, 2);
     tree_insert_child_L(root->L, 3);
@@ -376,7 +384,7 @@ int main(int argc, char **argv) {
     calculate_all_depts(root1, root1);
     calculate_all_heights(root1);
 
-    if (graph)
+    if (run_options.graph)
         export_tree_graph(root1);
 
     node_t* non_complete_root = node_new(10);
