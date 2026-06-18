@@ -1,4 +1,4 @@
-#include "state.h"
+#include "../include/state.h"
 
 int ct_swap = 0;
 int ct_cmp = 0;

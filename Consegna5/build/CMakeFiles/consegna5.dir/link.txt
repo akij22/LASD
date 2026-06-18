@@ -1,1 +1,0 @@
-/usr/bin/c++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/consegna5.dir/src/csv_loader.cpp.o CMakeFiles/consegna5.dir/src/edge_sort.cpp.o CMakeFiles/consegna5.dir/src/kruskal.cpp.o CMakeFiles/consegna5.dir/src/main.cpp.o CMakeFiles/consegna5.dir/src/union_find.cpp.o -o consegna5

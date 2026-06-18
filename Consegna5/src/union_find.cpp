@@ -1,4 +1,4 @@
-#include "union_find.h"
+#include "../include/union_find.h"
 
 // Dato un nodo x appartenente ad un insieme, restituisce il rappresentante del suo insieme
 int find_set(int* parent, int x) {

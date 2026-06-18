@@ -1,4 +1,0 @@
-Usage: Consegna4/build/consegna4_baseline [Options]
-Options:
-  -verbose: Abilita stampe durante l'esecuzione dell'algoritmo
-  -graph: creazione file di dot con il grafo dell'esecuzione (forza d=1 t=1)

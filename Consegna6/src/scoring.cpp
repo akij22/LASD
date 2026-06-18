@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "scoring.h"
+#include "../include/scoring.h"
 
 // Calcolo della Longest Common Subsequence
 int lcs_len(const char *a, const char *b) {

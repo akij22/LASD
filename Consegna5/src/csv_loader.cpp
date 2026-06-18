@@ -1,6 +1,6 @@
 #include <sstream>
 
-#include "csv_loader.h"
+#include "../include/csv_loader.h"
 
 std::ifstream open_distances_file(const char** filename) {
     std::ifstream file(*filename);

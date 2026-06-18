@@ -1,8 +1,8 @@
 #include <iostream>
 #include <string>
 
-#include "csv_loader.h"
-#include "kruskal.h"
+#include "../include/csv_loader.h"
+#include "../include/kruskal.h"
 
 /// apre il file CSV e carica le distanze in una matrice 2D dinamica, poi stampa un esempio di accesso alla matrice
 

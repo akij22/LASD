@@ -1,1 +1,0 @@
-Usage: PROGRAM file_versione_1.cpp file_versione_2.cpp

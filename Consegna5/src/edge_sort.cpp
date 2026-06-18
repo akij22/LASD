@@ -1,4 +1,4 @@
-#include "edge_sort.h"
+#include "../include/edge_sort.h"
 
 // Funzione di supporto per l'ordinamento mediante quicksort
 void edge_swap(arco& a, arco& b) {

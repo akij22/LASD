@@ -1,7 +1,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "tokenizer.h"
+#include "../include/tokenizer.h"
 
 int is_ident_start(char c) {
     return isalpha((unsigned char)c) || c == '_';

@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "file_io.h"
+#include "../include/file_io.h"
 
 int read_file(const char *filename, char *buffer, int max_size) {
     FILE *f = fopen(filename, "rb");

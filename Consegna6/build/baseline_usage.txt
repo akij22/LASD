@@ -1,1 +1,0 @@
-Usage: Consegna6/build/consegna6_baseline file_versione_1.cpp file_versione_2.cpp

@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "alignment.h"
-#include "scoring.h"
-#include "state.h"
-#include "tokenizer.h"
+#include "../include/alignment.h"
+#include "../include/scoring.h"
+#include "../include/state.h"
+#include "../include/tokenizer.h"
 
 int needleman_wunsch_code(CodeToken A[], int na, CodeToken B[], int nb) {
     M_code[0][0] = 0;

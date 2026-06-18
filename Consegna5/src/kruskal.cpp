@@ -1,8 +1,8 @@
 #include <iostream>
 
-#include "edge_sort.h"
-#include "kruskal.h"
-#include "union_find.h"
+#include "../include/edge_sort.h"
+#include "../include/kruskal.h"
+#include "../include/union_find.h"
 
 void print_cluster(int* parent, std::string* city, int N, int root) {
     int count = 0;

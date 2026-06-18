@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "legacy_support.h"
-#include "state.h"
+#include "../include/legacy_support.h"
+#include "../include/state.h"
 
 void print_array(int *A, int dim) {
     for (int j = 0; j < dim; j++) {

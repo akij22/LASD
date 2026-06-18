@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "alignment.h"
-#include "file_io.h"
-#include "state.h"
+#include "../include/alignment.h"
+#include "../include/file_io.h"
+#include "../include/state.h"
 
 // compilazione: g++ consegna6.cpp
 //
