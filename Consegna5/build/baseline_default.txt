@@ -1,0 +1,45 @@
+Distanza 1 -> 2: 941.5 km
+
+Ultimi archi aggiunti da Kruskal:
+
+Arco 97 dell'MST: Palermo - Trapani (73.1 km)
+Cluster A prima della fusione: dimensione 1: Palermo
+Cluster B prima della fusione: dimensione 1: Trapani
+
+Arco 98 dell'MST: Frosinone - Isernia (73.5 km)
+Cluster A prima della fusione: dimensione 73: Alessandria, Ancona, Aosta, Arezzo, Ascoli Piceno, Asti, Belluno, Bergamo, Biella, Bologna, Bolzano, Brescia, Chieti, Como, Cremona, Cuneo, Fermo, Ferrara, Firenze, Forli, Frosinone, Genova, Gorizia, Grosseto, Imperia, L'Aquila, La Spezia, Latina, Lecco, Livorno, Lodi, Lucca, Macerata, Mantova, Massa, Milano, Modena, Monza, Novara, Padova, Parma, Pavia, Perugia, Pesaro, Pescara, Piacenza, Pisa, Pistoia, Pordenone, Prato, Ravenna, Reggio Emilia, Rieti, Rimini, Roma, Rovigo, Savona, Siena, Sondrio, Teramo, Terni, Torino, Trento, Treviso, Trieste, Udine, Varese, Venezia, Verbania, Vercelli, Verona, Vicenza, Viterbo
+Cluster B prima della fusione: dimensione 7: Avellino, Benevento, Campobasso, Caserta, Isernia, Napoli, Salerno
+
+Arco 99 dell'MST: Benevento - Foggia (73.6 km)
+Cluster A prima della fusione: dimensione 80: Alessandria, Ancona, Aosta, Arezzo, Ascoli Piceno, Asti, Avellino, Belluno, Benevento, Bergamo, Biella, Bologna, Bolzano, Brescia, Campobasso, Caserta, Chieti, Como, Cremona, Cuneo, Fermo, Ferrara, Firenze, Forli, Frosinone, Genova, Gorizia, Grosseto, Imperia, Isernia, L'Aquila, La Spezia, Latina, Lecco, Livorno, Lodi, Lucca, Macerata, Mantova, Massa, Milano, Modena, Monza, Napoli, Novara, Padova, Parma, Pavia, Perugia, Pesaro, Pescara, Piacenza, Pisa, Pistoia, Pordenone, Prato, Ravenna, Reggio Emilia, Rieti, Rimini, Roma, Rovigo, Salerno, Savona, Siena, Sondrio, Teramo, Terni, Torino, Trento, Treviso, Trieste, Udine, Varese, Venezia, Verbania, Vercelli, Verona, Vicenza, Viterbo
+Cluster B prima della fusione: dimensione 8: Bari, Barletta, Brindisi, Foggia, Lecce, Matera, Potenza, Taranto
+
+Arco 100 dell'MST: Nuoro - Oristano (78.1 km)
+Cluster A prima della fusione: dimensione 1: Nuoro
+Cluster B prima della fusione: dimensione 1: Oristano
+
+Arco 101 dell'MST: Nuoro - Sassari (79.5 km)
+Cluster A prima della fusione: dimensione 2: Nuoro, Oristano
+Cluster B prima della fusione: dimensione 1: Sassari
+
+Arco 102 dell'MST: Oristano - Carbonia (82.4 km)
+Cluster A prima della fusione: dimensione 3: Nuoro, Oristano, Sassari
+Cluster B prima della fusione: dimensione 2: Cagliari, Carbonia
+
+Arco 103 dell'MST: Reggio Calabria - Catania (83.4 km)
+Cluster A prima della fusione: dimensione 6: Catanzaro, Cosenza, Crotone, Messina, Reggio Calabria, Vibo Valentia
+Cluster B prima della fusione: dimensione 6: Agrigento, Caltanissetta, Catania, Enna, Ragusa, Siracusa
+
+Arco 104 dell'MST: Palermo - Agrigento (91.4 km)
+Cluster A prima della fusione: dimensione 2: Palermo, Trapani
+Cluster B prima della fusione: dimensione 12: Agrigento, Caltanissetta, Catania, Catanzaro, Cosenza, Crotone, Enna, Messina, Ragusa, Reggio Calabria, Siracusa, Vibo Valentia
+
+Arco 105 dell'MST: Potenza - Cosenza (154 km)
+Cluster A prima della fusione: dimensione 88: Alessandria, Ancona, Aosta, Arezzo, Ascoli Piceno, Asti, Avellino, Bari, Barletta, Belluno, Benevento, Bergamo, Biella, Bologna, Bolzano, Brescia, Brindisi, Campobasso, Caserta, Chieti, Como, Cremona, Cuneo, Fermo, Ferrara, Firenze, Foggia, Forli, Frosinone, Genova, Gorizia, Grosseto, Imperia, Isernia, L'Aquila, La Spezia, Latina, Lecce, Lecco, Livorno, Lodi, Lucca, Macerata, Mantova, Massa, Matera, Milano, Modena, Monza, Napoli, Novara, Padova, Parma, Pavia, Perugia, Pesaro, Pescara, Piacenza, Pisa, Pistoia, Pordenone, Potenza, Prato, Ravenna, Reggio Emilia, Rieti, Rimini, Roma, Rovigo, Salerno, Savona, Siena, Sondrio, Taranto, Teramo, Terni, Torino, Trento, Treviso, Trieste, Udine, Varese, Venezia, Verbania, Vercelli, Verona, Vicenza, Viterbo
+Cluster B prima della fusione: dimensione 14: Agrigento, Caltanissetta, Catania, Catanzaro, Cosenza, Crotone, Enna, Messina, Palermo, Ragusa, Reggio Calabria, Siracusa, Trapani, Vibo Valentia
+
+Arco 106 dell'MST: Grosseto - Nuoro (309.5 km)
+Cluster A prima della fusione: dimensione 102: Agrigento, Alessandria, Ancona, Aosta, Arezzo, Ascoli Piceno, Asti, Avellino, Bari, Barletta, Belluno, Benevento, Bergamo, Biella, Bologna, Bolzano, Brescia, Brindisi, Caltanissetta, Campobasso, Caserta, Catania, Catanzaro, Chieti, Como, Cosenza, Cremona, Crotone, Cuneo, Enna, Fermo, Ferrara, Firenze, Foggia, Forli, Frosinone, Genova, Gorizia, Grosseto, Imperia, Isernia, L'Aquila, La Spezia, Latina, Lecce, Lecco, Livorno, Lodi, Lucca, Macerata, Mantova, Massa, Matera, Messina, Milano, Modena, Monza, Napoli, Novara, Padova, Palermo, Parma, Pavia, Perugia, Pesaro, Pescara, Piacenza, Pisa, Pistoia, Pordenone, Potenza, Prato, Ragusa, Ravenna, Reggio Calabria, Reggio Emilia, Rieti, Rimini, Roma, Rovigo, Salerno, Savona, Siena, Siracusa, Sondrio, Taranto, Teramo, Terni, Torino, Trapani, Trento, Treviso, Trieste, Udine, Varese, Venezia, Verbania, Vercelli, Verona, Vibo Valentia, Vicenza, Viterbo
+Cluster B prima della fusione: dimensione 5: Cagliari, Carbonia, Nuoro, Oristano, Sassari
+
+Archi totali nell'albero di copertura minimo: 106

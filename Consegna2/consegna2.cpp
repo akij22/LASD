@@ -283,14 +283,21 @@ bool isComplete(node_t* current) {
     while (!queue_is_empty(&q)) {
         node_t* node = dequeue(&q);
 
+        // Se il nodo ha un figlio sinistro
+
+        // e ho già trovato un nodo nullo, l'albero non è completo
         if (node->L != NULL) {
             if (check_null) {
-                final = true;
+                final = false;
                 break;
             }
 
+            // Altrimenti lo aggiungo alla coda (BFS)
             enqueue(&q, node->L);
         } else {
+
+            // Se il nodo corrente è NULL, significa che d'ora in poi non potrò più avere dei nodi
+            // Quindi marco che ho trovato un nodo nullo ed effettuo tale controllo
             check_null = true;
         }
 
@@ -314,11 +321,17 @@ bool isComplete(node_t* current) {
 }
 
 int calculate_node_height(node_t* current) {
+
+    // Se il nodo è nullo (ovvero sto esplorando i figli di una foglia), restituisco -1
+    // L'altezza finale della foglia sarà -1+1 = 0
     if (current == NULL)
         return -1;
 
-    return 1 + tree_max(calculate_node_height(current->L),
-                        calculate_node_height(current->R));
+
+    // Applico DFS pre-order
+    int h_sottoalbero_sx = calculate_node_height(current->L);
+    int h_sottoalbero_dx = calculate_node_height(current->R);
+    return 1 + tree_max(h_sottoalbero_sx, h_sottoalbero_dx);
 }
 
 node_t* build_euler() {
