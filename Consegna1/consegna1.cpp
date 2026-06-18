@@ -192,11 +192,15 @@
 
             // Inserimento locale con gnome sort.
             gnome_sort(buckets[b], count, v, stats);
+
+            // Avendo appena inserito un nuovo elemento, aggiorno `bucket_count[b]`
             bucket_count[b] = count + 1;
         }
 
 
         int k = 0;
+
+
         // PASSAGGIO FINALE
         // Copio gli elementi dei soli bucket non vuoti in ordine in A.
         for(int b = 0; b < NUM_BUCKET; b++) {

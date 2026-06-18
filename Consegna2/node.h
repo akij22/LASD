@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+// Struttura di un nodo qualsiasi appartenente ad un albero binario
 typedef struct node {
     int val;
     struct node *L;
@@ -50,40 +52,59 @@ inline void print_tree(node_t *root) {
 }
 
 inline node_t *flip(node_t *n) {
+
+    // Creo una copia dell'albero originale, la quale sarà "flippata"
     node_t *n1 = node_new(n->val);
 
+
     if (n->L != NULL)
+
+        // Assegno al figlio dx del nuovo albero il figlio sx dell'albero originale
         n1->R = flip(n->L);
 
     if (n->R != NULL)
+
+        // Assegno al figlio sx del nuovo albero il figlio dx dell'albero originale
         n1->L = flip(n->R);
 
     return n1;
 }
 
-inline int calculate_node_dept(node_t *n, node_t *current) {
-    if (current == NULL)
+
+// Calcolo profondità di un nodo
+// IDEA GENERALE: parto SEMPRE dalla radice e scorro ricorsivamente il sottoalbero sinistro e destro,
+// fino a quando rientro nel caso base `root == n`. In quel caso, ho trovato il nodo corrente che sto analizzando
+// La chiamata ricorsiva `return 1 + left_counter / right_counter;` mi permette di incrementare la profondità ogni volta che scendo
+inline int calculate_node_dept(node_t *n, node_t *root) {
+    if (root == NULL)
         printf("Ho trovato un nodo null, torno indietro\n");
 
-    if (current == NULL)
+    if (root == NULL)
         return -1;
 
-    if (current == n)
+    // Caso in cui ho trovato il nodo cercato
+    if (root == n)
         return 0;
 
-    int left_counter = calculate_node_dept(n, current->L);
+    int left_counter = calculate_node_dept(n, root->L);
 
+
+    // Se == -1, significa che il nodo che sto ricercando non è presente nel sottoalbero sinistro
     if (left_counter != -1)
         return 1 + left_counter;
 
-    int right_counter = calculate_node_dept(n, current->R);
+    int right_counter = calculate_node_dept(n, root->R);
 
     if (right_counter != -1)
         return right_counter + 1;
 
+
+    // Se == -1, significa che il nodo che sto ricercando non è presente nell'intero albero
     return -1;
 }
 
+
+// Eseguo visita DFS pre-ordine per calcolare la profondità di tutti i nodi
 inline void calculate_all_depts(node_t *current, node_t *root) {
     if (current == NULL)
         return;
